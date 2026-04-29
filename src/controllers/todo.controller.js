@@ -13,7 +13,7 @@ export async function createTodo(req, res, next) {
 
     const todo = await Todo.create({title, completed, priority, tags, dueDate});
 
-    res.status(201).json({ok: true, data: todo});
+    res.status(201).json(todo);
 
   } catch (error) {
     next(error);
@@ -29,11 +29,12 @@ export async function createTodo(req, res, next) {
 export async function listTodos(req, res, next) {
   try {
     // Your code here
-    let {page= 1, limit= 10, completed, priority, search} = req.query;
+   
+    let page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
 
-    page = parseInt(page);
-    limit = parseInt(page);
-
+    const { completed, priority, search } = req.query;
+    
     const filter = {};
      if (completed !== undefined) {
       filter.completed = completed === "true";
@@ -75,9 +76,13 @@ export async function getTodo(req, res, next) {
     const todo = await Todo.findById(id);
 
     if(!todo){
-      return res.status(404).json({ok: true, message: "Todo not found"});
+      return res.status(404).json({
+   error: {
+    message: "Todo not found"
+  }
+});
     }
-    res.json({ok: true, data: todo});
+    res.json(todo);
   } catch (error) {
     next(error);
   }
@@ -96,10 +101,10 @@ export async function updateTodo(req, res, next) {
       new: true,
       runValidators: true,
     });
-    if(!updateTodo){
-      return res.status(404).json({ok: false, message: "Todo not found"});
+    if(!updatedTodo){
+      return res.status(404).json({error:{ message: "Todo not found"}});
     }
-    res.json({ ok: true, data: updatedTodo });
+    res.json(updatedTodo);
 
   } catch (error) {
     next(error);
@@ -118,12 +123,12 @@ export async function toggleTodo(req, res, next) {
     const todo = await Todo.findById(id);
 
     if(!todo){
-      res.status(404).json({ok: false, message: "Todo not found"});
+      return res.status(404).json({error:  {message: "Todo not found"}});
     }
     todo.completed = !todo.completed;
     await todo.save();
 
-    res.json({ok: true, data: todo});
+    res.json(todo);
   } catch (error) {
     next(error);
   }
@@ -141,9 +146,9 @@ export async function deleteTodo(req, res, next) {
     const deleted = await Todo.findByIdAndDelete(id);
 
     if(!deleted){
-      return res.status(404).json({ok: false, message: "Todo not found"});
+    return res.status(404).json({error:{ message: "Todo not found"}});
     }
-    res.json(204).send();
+    res.status(204).send();
     
   } catch (error) {
     next(error);

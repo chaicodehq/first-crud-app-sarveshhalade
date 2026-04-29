@@ -48,7 +48,7 @@ const todoSchema = new mongoose.Schema(
   },
 
   {
-    timestapms : true,
+    timestamps : true,
   }
 );
 
